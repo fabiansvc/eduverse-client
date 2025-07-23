@@ -137,7 +137,7 @@ export default function Metaverse() {
             <Bvh firstHitOnly>
               {/* <Perf position="top-left" />  */}
               <Lights />
-              <Physics debug={true} timeStep={"vary"}>
+              <Physics debug={false} timeStep={"vary"}>
                 <EISC />
                 <Alu position={[-1, 0, -1.5]} rotation-y={Math.PI * 0.15} />
                 <Avatar />
