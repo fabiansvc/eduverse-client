@@ -1,0 +1,92 @@
+.container-menu {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  width: 100vw;
+  position: absolute;
+  z-index: 3;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 10rem;
+}
+
+.menu-nav {
+  background-color: white;
+  border-radius: 0.5rem;
+  padding: 0.2rem;
+}
+
+.menu-nav > ul {
+  list-style: none;
+  padding: 0rem 0.5rem;
+}
+
+/* Estilos básicos para los elementos li */
+.menu-nav > ul > li {
+  color: black; /* Color de la fuente */
+  background-color: transparent; /* Fondo transparente por defecto */
+  padding: 0.5rem; /* Espaciado interno */
+  border-radius: 0.2rem; /* Bordes redondeados */
+  transition: background-color 0.3s; /* Transición suave para el fondo */
+}
+
+/* Estilo para los enlaces dentro de los elementos li */
+.menu-nav > ul > li > a {
+  text-decoration: none; /* Quitar el subrayado */
+  color: inherit; /* Heredar el color de la fuente del elemento li */
+  display: block; /* Hacer que el enlace ocupe todo el espacio del li */
+}
+
+/* Efecto hover para los elementos li */
+.menu-nav > ul > li:hover {
+  background-color: red; /* Color de fondo al pasar el cursor */
+  color: white; /* Color de la fuente al pasar el cursor */
+}
+
+/* Prevenir cambio de color al seleccionar */
+.menu-nav > ul > li:active,
+.menu-nav > ul > li:focus {
+  color: black; /* Mantener el color de la fuente */
+  background-color: red; /* Mantener el color de fondo */
+}
+.button-avatar {
+  background-color: white;
+  outline: none;
+  cursor: pointer;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid gray;
+}
+
+.button-exit {
+  background-color: white;
+  outline: none;
+  cursor: pointer;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  margin-top: 0.5rem;
+  margin-right: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid gray;
+  font-size: x-large;
+}
+
+.icon-avatar {
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}

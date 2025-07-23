@@ -1,0 +1,29 @@
+.container-profile {
+  display: flex;
+  background-image: url("/public/assets/background/EISC.jpg");
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  z-index: 2;
+  background-size: cover;
+  background-position: center;
+}
+
+.card-profile {
+  display: flex;
+  align-items: center;
+  background-color: hsla(0, 0%, 100%, 0.98);
+  border-bottom: 0.5rem solid #ff6550;
+  padding: 2rem;
+  width: 100vw;
+}
+
+@media (max-width: 768px) {
+  .card-profile{
+    flex-direction: column;
+  }
+}
+
+
+

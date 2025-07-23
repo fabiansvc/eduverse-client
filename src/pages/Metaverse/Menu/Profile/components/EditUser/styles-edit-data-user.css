@@ -1,0 +1,33 @@
+.container-edit-user {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-form-edit {
+  display: flex;
+  justify-content: center;
+}
+
+.form-edit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 50%;
+}
+
+.container-icon-user{
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-user{
+  width: 16%;
+  height: auto;
+  border-radius: 50%;
+  border: 2px solid gray;
+}
+
+
+
+

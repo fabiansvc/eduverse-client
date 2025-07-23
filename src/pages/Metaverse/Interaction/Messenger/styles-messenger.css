@@ -1,0 +1,89 @@
+.container-messenger {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: fixed;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-bottom: 0.5rem solid #ff6550;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+  width: 20rem;
+  height: 16rem;
+  max-height: 16rem;
+  padding: 0.5rem 0.5rem 0.15rem 0.5rem;
+}
+
+.messages-messenger {
+  overflow-y: auto;
+  margin-bottom: 0.25rem;
+  display: flex;
+  flex-direction: column; /* Organiza los mensajes en una columna */
+}
+
+.message-messenger {
+  background-color: #fff8f8;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.05);
+  max-width: calc(100% - 1rem);
+  word-break: break-word;
+}
+
+.message-mine {
+  background-color: #feeeee;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message-other {
+  background-color: #eeeeee;
+  align-self: flex-start;
+  text-align: left;
+}
+
+.message-username-messenger {
+  font-size: 0.8rem;
+  color: #666666;
+  margin-bottom: 0.2rem;
+  font-style: italic;
+  overflow-wrap: break-word;
+}
+
+.input-send-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.input-messenger {
+  flex-grow: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+
+.send-messenger button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon-messenger {
+  background-color: red;
+  color: white;
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.send-messenger:hover .icon-messenger {
+  background-color: #cc0000;
+}

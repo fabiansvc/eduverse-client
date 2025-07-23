@@ -1,0 +1,39 @@
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  background-color: #ff0000;
+  color: #ffffff;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.footer > :last-child {
+    margin-top: 1rem;
+}
+
+.footer h4,
+.footer ul,
+.footer li,
+.footer a {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer ul {
+  padding-left: 1rem; /* Add some padding to the left of the list */
+}
+
+.footer a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}

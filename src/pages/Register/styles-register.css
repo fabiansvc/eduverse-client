@@ -1,0 +1,66 @@
+.container-register {
+  display: flex;
+  flex-direction: column;
+  background-image: url("../../../public/assets/background/EISC.jpg");
+  background-size: cover;
+  background-position: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.card-form-register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.form-register {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 1rem;
+  border-bottom: 0.5rem solid #ff6550;
+  padding: 2rem 4rem;
+  width: 100%;
+  max-width: 512px;
+  box-sizing: border-box;
+  height: 95%;
+}
+
+.form-register h3 {
+  text-align: center;
+}
+
+@media (max-width: 1080px) {
+  .form-register {
+
+    height: 60%;
+  }
+
+
+}
+
+@media (max-width: 768px) {
+  .form-register {
+    padding: 8rem 4rem;
+    width: 85%;
+    height: 90%;
+  }
+
+  .form-register h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-register {
+    padding: 2rem 2rem;
+    width: 90%;
+    height: 98%;
+  }
+
+  .form-register h3 {
+    font-size: 1.2rem;
+  }
+}

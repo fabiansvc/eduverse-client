@@ -1,0 +1,31 @@
+.user-guest-icon {
+  height: 8rem;
+  width: 8rem;
+}
+
+.button-guest-login {
+  display: inline-block;
+  padding: 0.5em 1em;
+  margin-bottom: 0.75rem;
+  font-size: medium;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 1em;
+  cursor: pointer;
+  color: #fff;
+  background-color: #dc3545;
+  border: none;
+  transition: transform 0.3s ease;
+}
+
+.button-guest-login:hover {
+  transform: scale(1.1);
+  background-color: #c82333;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
+}
+
+.button-guest-login:active {
+  background-color: #bd2130;
+}

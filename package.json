@@ -1,0 +1,65 @@
+{
+  "name": "eisc-metaverse-client",
+  "private": false,
+  "version": "1.4.0",
+  "description": "EISC Metaverse",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --outDir build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "deploy": "vercel --prod",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "metaverse"
+  ],
+  "author": "Fabian Stiven Valencia Cordoba",
+  "license": "ISC",
+  "dependencies": {
+    "@react-three/drei": "^9.107.2",
+    "@react-three/fiber": "^8.16.8",
+    "@types/three": "^0.165.0",
+    "leva": "^0.9.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.0",
+    "react-slick": "^0.30.2",
+    "slick-carousel": "^1.8.1",
+    "three": "^0.165.0",
+    "vercel": "^34.3.0",
+    "zustand": "^4.5.4",
+    "@readyplayerme/rpm-react-sdk": "^0.1.5",
+    "ecctrl": "^1.0.77",
+    "fiber": "^1.0.4",
+    "firebase": "^10.11.1",
+    "peerjs": "^1.5.2",
+    "process": "^0.11.10",
+    "r3f-perf": "^7.2.1",
+    "react-icons": "^5.2.0",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.2",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "vite": "^5.3.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

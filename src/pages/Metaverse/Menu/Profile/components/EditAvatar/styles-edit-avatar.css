@@ -1,0 +1,19 @@
+.container-edit-avatar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 50%;
+}
+
+.avatar-view {
+  width: 10vw;
+}
+
+@media (max-width: 768px) {
+  .container-edit-avatar {
+    height: 60%;
+
+  }
+}
