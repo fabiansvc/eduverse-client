@@ -1,12 +1,12 @@
 {
-  "name": "eisc-metaverse-client",
+  "name": "eduverse",
   "private": false,
-  "version": "1.4.0",
-  "description": "EISC Metaverse",
+  "version": "2.0.0",
+  "description": "EduVerse is a metaverse platform designed to enhance the educational experience by providing a virtual space for students and teachers to interact, learn, and collaborate in real-time. It integrates advanced technologies like WebRTC for live communication, Firebase for backend services, and React Three Fiber for immersive 3D environments.",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --outDir build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "deploy": "vercel --prod",
     "preview": "vite preview"
