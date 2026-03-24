@@ -3,13 +3,14 @@ import { Suspense, useEffect, useRef, useMemo, useCallback } from "react";
 import { useUser } from "../../../context/UserContext";
 import { useAvatar } from "../../../context/AvatarContext";
 import { CapsuleCollider, RigidBody } from "@react-three/rapier";
+import { useStreamojiToken } from "../../../hooks/useStreamojiToken";
 
 /**
  * Component representing the user's avatar in the metaverse.
  * This component displays the user's avatar model and manages its animations.
  * @returns {JSX.Element} The avatar component.
  */
-export default function Avatar() {
+function AvatarModel({ streamojiToken }) {
   const { user, setUser } = useUser();
   const { avatar, setAvatar } = useAvatar();
   const avatarRef = useRef();
@@ -30,13 +31,22 @@ export default function Avatar() {
   const url = useMemo(
     () => {
       const isStreamoji = user.avatarUrl.includes("streamoji");
-      if (isStreamoji) return user.avatarUrl;
+      if (isStreamoji) {
+        try {
+          const parsedUrl = new URL(user.avatarUrl);
+          parsedUrl.searchParams.set("token", streamojiToken);
+          return parsedUrl.toString();
+        } catch (e) {
+          const separator = user.avatarUrl.includes("?") ? "&" : "?";
+          return `${user.avatarUrl}${separator}token=${streamojiToken}`;
+        }
+      }
       const separator = user.avatarUrl.includes("?") ? "&" : "?";
       return `${user.avatarUrl}${separator}${Object.entries(parametersAvatar)
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
         .join("&")}`;
     },
-    [user.avatarUrl, parametersAvatar]
+    [user.avatarUrl, parametersAvatar, streamojiToken]
   );
 
   // Load avatar model and materials
@@ -107,8 +117,6 @@ export default function Avatar() {
       avatarBodyRef.current.setGravityScale(1, true);
     }
   }, []);
-
-  console.log(nodes);
 
   // Render the avatar component
   return (
@@ -201,4 +209,16 @@ export default function Avatar() {
       </RigidBody>
     </Suspense>
   );
+}
+
+export default function Avatar() {
+  const { user } = useUser();
+  const userId = user?.email || "viewer_user";
+  const userName = user?.email || "Viewer";
+  const streamojiToken = useStreamojiToken(userId, userName);
+  const isStreamoji = user?.avatarUrl?.includes("streamoji");
+
+  if (isStreamoji && !streamojiToken) return null;
+
+  return <AvatarModel streamojiToken={streamojiToken} />;
 }
