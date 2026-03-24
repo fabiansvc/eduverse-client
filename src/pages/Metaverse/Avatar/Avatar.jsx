@@ -3,13 +3,14 @@ import { Suspense, useEffect, useRef, useMemo, useCallback } from "react";
 import { useUser } from "../../../context/UserContext";
 import { useAvatar } from "../../../context/AvatarContext";
 import { CapsuleCollider, RigidBody } from "@react-three/rapier";
+import { useStreamojiToken } from "../../../hooks/useStreamojiToken";
 
 /**
  * Component representing the user's avatar in the metaverse.
  * This component displays the user's avatar model and manages its animations.
  * @returns {JSX.Element} The avatar component.
  */
-export default function Avatar() {
+function AvatarModel({ streamojiToken }) {
   const { user, setUser } = useUser();
   const { avatar, setAvatar } = useAvatar();
   const avatarRef = useRef();
@@ -26,19 +27,26 @@ export default function Avatar() {
     []
   );
 
-  console.log(user.avatarUrl);
-
   // Append optimization parameters to the avatar URL
   const url = useMemo(
     () => {
       const isStreamoji = user.avatarUrl.includes("streamoji");
-      if (isStreamoji) return user.avatarUrl;
+      if (isStreamoji) {
+        try {
+          const parsedUrl = new URL(user.avatarUrl);
+          parsedUrl.searchParams.set("token", streamojiToken);
+          return parsedUrl.toString();
+        } catch (e) {
+          const separator = user.avatarUrl.includes("?") ? "&" : "?";
+          return `${user.avatarUrl}${separator}token=${streamojiToken}`;
+        }
+      }
       const separator = user.avatarUrl.includes("?") ? "&" : "?";
       return `${user.avatarUrl}${separator}${Object.entries(parametersAvatar)
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
         .join("&")}`;
     },
-    [user.avatarUrl, parametersAvatar]
+    [user.avatarUrl, parametersAvatar, streamojiToken]
   );
 
   // Load avatar model and materials
@@ -58,9 +66,8 @@ export default function Avatar() {
     } catch (e) {
       console.warn("Could not compute bounding box for avatar height", e);
     }
-    return 1.8;
   }, [nodes]);
-  const gender = useMemo(() => (height > 1 ? "male" : "female"), [height]);
+  const gender = useMemo(() => (height > 1.07 ? "male" : "female"), [height]);
 
   // Load animations based on gender
   const { animations } = useGLTF(
@@ -127,96 +134,73 @@ export default function Avatar() {
         gravityScale={0}
       >
         <group ref={avatarRef} scale={0.9} dispose={null}>
-          <primitive object={nodes.Hips} />
-          {nodes.Wolf3D_Avatar && (
-            <skinnedMesh
-              name="Wolf3D_Avatar"
-              geometry={nodes.Wolf3D_Avatar.geometry}
-              material={materials.Wolf3D_Avatar}
-              skeleton={nodes.Wolf3D_Avatar.skeleton}
-              morphTargetDictionary={nodes.Wolf3D_Avatar.morphTargetDictionary}
-              morphTargetInfluences={nodes.Wolf3D_Avatar.morphTargetInfluences}
-            />
-          )}
-          {nodes.Wolf3D_Avatar_Transparent && (
-            <skinnedMesh
-              geometry={nodes.Wolf3D_Avatar_Transparent.geometry}
-              material={materials.Wolf3D_Avatar_Transparent}
-              skeleton={nodes.Wolf3D_Avatar_Transparent.skeleton}
-            />
-          )}
-          {nodes.Streamoji_Body && (
-            <skinnedMesh
-              name="Streamoji_Body"
-              geometry={nodes.Streamoji_Body.geometry}
-              material={materials.Streamoji_Body}
-              skeleton={nodes.Streamoji_Body.skeleton}
-            />
-          )}
-          {nodes.Streamoji_Outfit_Bottom && (
-            <skinnedMesh
-              name="Streamoji_Outfit_Bottom"
-              geometry={nodes.Streamoji_Outfit_Bottom.geometry}
-              material={materials.Streamoji_Outfit_Bottom}
-              skeleton={nodes.Streamoji_Outfit_Bottom.skeleton}
-            />
-          )}
-          {nodes.Streamoji_Outfit_Footwear && (
-            <skinnedMesh
-              name="Streamoji_Outfit_Footwear"
-              geometry={nodes.Streamoji_Outfit_Footwear.geometry}
-              material={materials.Streamoji_Outfit_Footwear}
-              skeleton={nodes.Streamoji_Outfit_Footwear.skeleton}
-            />
-          )}
-          {nodes.Streamoji_Outfit_Top && (
-            <skinnedMesh
-              name="Streamoji_Outfit_Top"
-              geometry={nodes.Streamoji_Outfit_Top.geometry}
-              material={materials.Streamoji_Outfit_Top}
-              skeleton={nodes.Streamoji_Outfit_Top.skeleton}
-            />
-          )}
-          {nodes.EyeLeft && materials.Streamoji_Eye && (
-            <skinnedMesh
+          <group name="Scene">
+            <group name="Armature">
+              <primitive object={nodes?.Hips} />
+              {nodes?.Streamoji_Body?.bindMode && <skinnedMesh
+                name="Streamoji_Body"
+                geometry={nodes.Streamoji_Body.geometry}
+                material={materials.Streamoji_Body}
+                skeleton={nodes.Streamoji_Body.skeleton}
+              />}
+              {nodes?.Streamoji_Outfit_Bottom?.bindMode && <skinnedMesh
+                name="Streamoji_Outfit_Bottom"
+                geometry={nodes.Streamoji_Outfit_Bottom.geometry}
+                material={materials.Streamoji_Outfit_Bottom}
+                skeleton={nodes.Streamoji_Outfit_Bottom.skeleton}
+              />}
+              {nodes?.Streamoji_Outfit_Footwear?.bindMode && <skinnedMesh
+                name="Streamoji_Outfit_Footwear"
+                geometry={nodes.Streamoji_Outfit_Footwear.geometry}
+                material={materials.Streamoji_Outfit_Footwear}
+                skeleton={nodes.Streamoji_Outfit_Footwear.skeleton}
+              />}
+              {nodes?.Streamoji_Outfit_Top?.bindMode && <skinnedMesh
+                name="Streamoji_Outfit_Top"
+                geometry={nodes.Streamoji_Outfit_Top.geometry}
+                material={materials.Streamoji_Outfit_Top}
+                skeleton={nodes.Streamoji_Outfit_Top.skeleton}
+              />}
+            </group>
+            {nodes?.EyeLeft?.bindMode && <skinnedMesh
               name="EyeLeft"
               geometry={nodes.EyeLeft.geometry}
               material={materials.Streamoji_Eye}
               skeleton={nodes.EyeLeft.skeleton}
               morphTargetDictionary={nodes.EyeLeft.morphTargetDictionary}
               morphTargetInfluences={nodes.EyeLeft.morphTargetInfluences}
-            />
-          )}
-          {nodes.EyeRight && materials.Streamoji_Eye && (
-            <skinnedMesh
+            />}
+            {nodes?.EyeRight?.bindMode && <skinnedMesh
               name="EyeRight"
               geometry={nodes.EyeRight.geometry}
               material={materials.Streamoji_Eye}
               skeleton={nodes.EyeRight.skeleton}
               morphTargetDictionary={nodes.EyeRight.morphTargetDictionary}
               morphTargetInfluences={nodes.EyeRight.morphTargetInfluences}
-            />
-          )}
-          {nodes.Streamoji_Head && (
-            <skinnedMesh
+            />}
+            {nodes?.Streamoji_Head?.bindMode && <skinnedMesh
               name="Streamoji_Head"
               geometry={nodes.Streamoji_Head.geometry}
               material={materials.Streamoji_Skin}
               skeleton={nodes.Streamoji_Head.skeleton}
               morphTargetDictionary={nodes.Streamoji_Head.morphTargetDictionary}
               morphTargetInfluences={nodes.Streamoji_Head.morphTargetInfluences}
-            />
-          )}
-          {nodes.Streamoji_Teeth && (
-            <skinnedMesh
+            />}
+            {nodes?.Streamoji_Teeth?.bindMode && <skinnedMesh
               name="Streamoji_Teeth"
               geometry={nodes.Streamoji_Teeth.geometry}
               material={materials.Streamoji_Teeth}
               skeleton={nodes.Streamoji_Teeth.skeleton}
               morphTargetDictionary={nodes.Streamoji_Teeth.morphTargetDictionary}
               morphTargetInfluences={nodes.Streamoji_Teeth.morphTargetInfluences}
-            />
-          )}
+            />}
+            {nodes?.Streamoji_Hair?.bindMode && <skinnedMesh
+              name="Streamoji_Hair"
+              geometry={nodes.Streamoji_Hair.geometry}
+              material={materials.Streamoji_Hair}
+              skeleton={nodes.Streamoji_Hair.skeleton}
+            />}
+          </group>
           <CapsuleCollider
             args={[height / 2 + 0.1, 0.3]}
             position={[0, 1, 0]}
@@ -225,4 +209,16 @@ export default function Avatar() {
       </RigidBody>
     </Suspense>
   );
+}
+
+export default function Avatar() {
+  const { user } = useUser();
+  const userId = user?.email || "viewer_user";
+  const userName = user?.email || "Viewer";
+  const streamojiToken = useStreamojiToken(userId, userName);
+  const isStreamoji = user?.avatarUrl?.includes("streamoji");
+
+  if (isStreamoji && !streamojiToken) return null;
+
+  return <AvatarModel streamojiToken={streamojiToken} />;
 }

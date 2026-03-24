@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { editUser, getUser } from "../../db/user-collection";
 import { useAuth } from "../../context/AuthContext";
 import { useUser } from "../../context/UserContext";
+import { fetchStreamojiToken } from "../../services/streamoji-token";
 
 /**
  * Functional component for creating an avatar.
@@ -26,36 +27,20 @@ const CreateAvatar = () => {
   const [iframeUrl, setIframeUrl] = useState("");
   const iframeRef = useRef(null);
 
-  const clientId = "client_anpPYo3lziQF3PuoEXpn8FJluVj1";
-  const clientSecret = "1NzP7swcHY9YgaLMF6ZPQACpf3sr9oUB";
   const userId = email || "guest_user";
   const userName = email || "Guest";
 
   useEffect(() => {
-    const fetchAuthToken = async () => {
-      try {
-        const response = await fetch(
-          "https://us-central1-streamoji-265f4.cloudfunctions.net/getAuthToken",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Client-Secret": clientSecret,
-              "Client-Id": clientId,
-            },
-            body: JSON.stringify({ userId, userName }),
-          }
-        );
-        const data = await response.json();
-        if (data.success) {
-          setAuthToken(data.authToken);
-        }
-      } catch (error) {
-        console.error("Error fetching token:", error);
+    let mounted = true;
+    fetchStreamojiToken(userId, userName).then((token) => {
+      if (mounted && token) {
+        setAuthToken(token);
       }
+    });
+    return () => {
+      mounted = false;
     };
-    fetchAuthToken();
-  }, [clientId, clientSecret, userId, userName]);
+  }, [userId, userName]);
 
   useEffect(() => {
     if (authToken) {
@@ -140,7 +125,15 @@ const CreateAvatar = () => {
           );
         }
         if (json.eventName === "v1.avatar.exported") {
-          const url = json.data.url;
+          let url = json.data.url;
+          // Strip the token query parameter before saving to ensure URLs don't hardcode expired tokens
+          try {
+            if (url.includes("streamoji")) {
+               const parsedUrl = new URL(url);
+               parsedUrl.searchParams.delete("token");
+               url = parsedUrl.toString();
+            }
+          } catch (error) {}
           handleOnAvatarExported(url);
         }
       } catch (error) {

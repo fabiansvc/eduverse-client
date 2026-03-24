@@ -5,6 +5,7 @@ import { socketServer } from "../../../services/socket-server";
 import { RigidBody } from "@react-three/rapier";
 import { Quaternion, Vector3 } from "three";
 import useAvatarStore from "../../../stores/avatar-store";
+import { useStreamojiToken } from "../../../hooks/useStreamojiToken";
 
 /**
  * User Component
@@ -12,7 +13,7 @@ import useAvatarStore from "../../../stores/avatar-store";
  * @param {Object} props.avatar - Avatar object containing avatar information
  * @returns {JSX.Element} User component
  */
-const User = ({ avatar }) => {
+const UserModel = ({ avatar, streamojiToken }) => {
   const userRef = useRef();
   const rigidBodyUserRef = useRef();
 
@@ -32,25 +33,56 @@ const User = ({ avatar }) => {
     [avatar.rotation]
   );
 
-  const url = useMemo(() => {
-    const parametersAvatar = {
-      quality: "medium",
-      meshLod: 1,
-      textureSizeLimit: 512,
+  // Parameters for avatar optimization
+  const parametersAvatar = useMemo(
+    () => ({
+      quality: "medium", // low, medium, high
+      meshLod: 1, // 0 - No triangle count reduction is applied (default), 1 - Retain 50% of the original triangle count, 2 - Retain 25% of the original triangle count.
+      textureSizeLimit: 512, // Min: 256, Max: 1024 (default)
       useDracoMeshCompression: true,
-    };
+    }),
+    []
+  );
 
-    return `${avatar?.avatarUrl}?${Object.entries(parametersAvatar)
-      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-      .join("&")}`;
-  }, [avatar?.avatarUrl]);
+  // Append optimization parameters to the avatar URL
+  const url = useMemo(
+    () => {
+      const isStreamoji = avatar.avatarUrl.includes("streamoji");
+      if (isStreamoji) {
+        try {
+          const parsedUrl = new URL(avatar.avatarUrl);
+          parsedUrl.searchParams.set("token", streamojiToken);
+          return parsedUrl.toString();
+        } catch (e) {
+          const separator = avatar.avatarUrl.includes("?") ? "&" : "?";
+          return `${avatar.avatarUrl}${separator}token=${streamojiToken}`;
+        }
+      }
+      const separator = avatar.avatarUrl.includes("?") ? "&" : "?";
+      return `${avatar.avatarUrl}${separator}${Object.entries(parametersAvatar)
+        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+        .join("&")}`;
+    },
+    [avatar.avatarUrl, parametersAvatar, streamojiToken]
+  );
 
   const { nodes, materials } = useGLTF(url);
-  const height = useMemo(
-    () => nodes.Wolf3D_Avatar.geometry.boundingBox.max.y,
-    [nodes]
-  );
-  const gender = useMemo(() => (height > 1.8 ? "male" : "female"), [height]);
+  // Determine gender based on avatar height
+  const height = useMemo(() => {
+    try {
+      if (nodes.Wolf3D_Avatar) {
+        if (!nodes.Wolf3D_Avatar.geometry.boundingBox) nodes.Wolf3D_Avatar.geometry.computeBoundingBox();
+        return nodes.Wolf3D_Avatar.geometry.boundingBox.max.y;
+      }
+      if (nodes.Streamoji_Body) {
+        if (!nodes.Streamoji_Body.geometry.boundingBox) nodes.Streamoji_Body.geometry.computeBoundingBox();
+        return nodes.Streamoji_Body.geometry.boundingBox.max.y;
+      }
+    } catch (e) {
+      console.warn("Could not compute bounding box for avatar height", e);
+    }
+  }, [nodes]);
+  const gender = useMemo(() => (height > 1.07 ? "male" : "female"), [height]);
 
   const { animations } = useGLTF(
     gender === "male"
@@ -79,33 +111,93 @@ const User = ({ avatar }) => {
   return (
     <RigidBody ref={rigidBodyUserRef} colliders={false}>
       <group ref={userRef} scale={0.9} dispose={null}>
-        <primitive object={nodes.Hips} />
-        <skinnedMesh
-          name="Wolf3D_Avatar"
-          geometry={nodes.Wolf3D_Avatar.geometry}
-          material={materials.Wolf3D_Avatar}
-          skeleton={nodes.Wolf3D_Avatar.skeleton}
-          morphTargetDictionary={nodes.Wolf3D_Avatar.morphTargetDictionary}
-          morphTargetInfluences={nodes.Wolf3D_Avatar.morphTargetInfluences}
-        />
-        {nodes.Wolf3D_Avatar_Transparent && (
-          <skinnedMesh
-            geometry={nodes.Wolf3D_Avatar_Transparent.geometry}
-            material={materials.Wolf3D_Avatar_Transparent}
-            skeleton={nodes.Wolf3D_Avatar_Transparent.skeleton}
-          />
-        )}
-        <Text
-          fontSize={0.05}
-          color="black"
-          position={[0, 1.9, 0]}
-          textAlign="center"
-        >
-          {avatar.nickname}
-        </Text>
+        <group name="Scene">
+          <group name="Armature">
+            <primitive object={nodes?.Hips} />
+            {nodes?.Streamoji_Body?.bindMode && <skinnedMesh
+              name="Streamoji_Body"
+              geometry={nodes.Streamoji_Body.geometry}
+              material={materials.Streamoji_Body}
+              skeleton={nodes.Streamoji_Body.skeleton}
+            />}
+            {nodes?.Streamoji_Outfit_Bottom?.bindMode && <skinnedMesh
+              name="Streamoji_Outfit_Bottom"
+              geometry={nodes.Streamoji_Outfit_Bottom.geometry}
+              material={materials.Streamoji_Outfit_Bottom}
+              skeleton={nodes.Streamoji_Outfit_Bottom.skeleton}
+            />}
+            {nodes?.Streamoji_Outfit_Footwear?.bindMode && <skinnedMesh
+              name="Streamoji_Outfit_Footwear"
+              geometry={nodes.Streamoji_Outfit_Footwear.geometry}
+              material={materials.Streamoji_Outfit_Footwear}
+              skeleton={nodes.Streamoji_Outfit_Footwear.skeleton}
+            />}
+            {nodes?.Streamoji_Outfit_Top?.bindMode && <skinnedMesh
+              name="Streamoji_Outfit_Top"
+              geometry={nodes.Streamoji_Outfit_Top.geometry}
+              material={materials.Streamoji_Outfit_Top}
+              skeleton={nodes.Streamoji_Outfit_Top.skeleton}
+            />}
+          </group>
+          {nodes?.EyeLeft?.bindMode && <skinnedMesh
+            name="EyeLeft"
+            geometry={nodes.EyeLeft.geometry}
+            material={materials.Streamoji_Eye}
+            skeleton={nodes.EyeLeft.skeleton}
+            morphTargetDictionary={nodes.EyeLeft.morphTargetDictionary}
+            morphTargetInfluences={nodes.EyeLeft.morphTargetInfluences}
+          />}
+          {nodes?.EyeRight?.bindMode && <skinnedMesh
+            name="EyeRight"
+            geometry={nodes.EyeRight.geometry}
+            material={materials.Streamoji_Eye}
+            skeleton={nodes.EyeRight.skeleton}
+            morphTargetDictionary={nodes.EyeRight.morphTargetDictionary}
+            morphTargetInfluences={nodes.EyeRight.morphTargetInfluences}
+          />}
+          {nodes?.Streamoji_Head?.bindMode && <skinnedMesh
+            name="Streamoji_Head"
+            geometry={nodes.Streamoji_Head.geometry}
+            material={materials.Streamoji_Skin}
+            skeleton={nodes.Streamoji_Head.skeleton}
+            morphTargetDictionary={nodes.Streamoji_Head.morphTargetDictionary}
+            morphTargetInfluences={nodes.Streamoji_Head.morphTargetInfluences}
+          />}
+          {nodes?.Streamoji_Teeth?.bindMode && <skinnedMesh
+            name="Streamoji_Teeth"
+            geometry={nodes.Streamoji_Teeth.geometry}
+            material={materials.Streamoji_Teeth}
+            skeleton={nodes.Streamoji_Teeth.skeleton}
+            morphTargetDictionary={nodes.Streamoji_Teeth.morphTargetDictionary}
+            morphTargetInfluences={nodes.Streamoji_Teeth.morphTargetInfluences}
+          />}
+          {nodes?.Streamoji_Hair?.bindMode && <skinnedMesh
+            name="Streamoji_Hair"
+            geometry={nodes.Streamoji_Hair.geometry}
+            material={materials.Streamoji_Hair}
+            skeleton={nodes.Streamoji_Hair.skeleton}
+          />}
+          <Text
+            fontSize={0.05}
+            color="black"
+            position={[0, 1.9, 0]}
+            textAlign="center"
+          >
+            {avatar.nickname}
+          </Text>
+        </group>
       </group>
     </RigidBody>
   );
+};
+
+const User = ({ avatar }) => {
+  const streamojiToken = useStreamojiToken("viewer_user", "Viewer");
+  const isStreamoji = avatar?.avatarUrl?.includes("streamoji");
+
+  if (isStreamoji && !streamojiToken) return null;
+
+  return <UserModel avatar={avatar} streamojiToken={streamojiToken} />;
 };
 
 /**
