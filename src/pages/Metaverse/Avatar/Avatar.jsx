@@ -26,12 +26,18 @@ export default function Avatar() {
     []
   );
 
+  console.log(user.avatarUrl);
+
   // Append optimization parameters to the avatar URL
   const url = useMemo(
-    () =>
-      `${user.avatarUrl}?${Object.entries(parametersAvatar)
+    () => {
+      const isStreamoji = user.avatarUrl.includes("streamoji");
+      if (isStreamoji) return user.avatarUrl;
+      const separator = user.avatarUrl.includes("?") ? "&" : "?";
+      return `${user.avatarUrl}${separator}${Object.entries(parametersAvatar)
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-        .join("&")}`,
+        .join("&")}`;
+    },
     [user.avatarUrl, parametersAvatar]
   );
 
@@ -39,11 +45,22 @@ export default function Avatar() {
   const { nodes, materials } = useGLTF(url);
 
   // Determine gender based on avatar height
-  const height = useMemo(
-    () => nodes.Wolf3D_Avatar.geometry.boundingBox.max.y,
-    [nodes]
-  );
-  const gender = useMemo(() => (height > 1.8 ? "male" : "female"), [height]);
+  const height = useMemo(() => {
+    try {
+      if (nodes.Wolf3D_Avatar) {
+        if (!nodes.Wolf3D_Avatar.geometry.boundingBox) nodes.Wolf3D_Avatar.geometry.computeBoundingBox();
+        return nodes.Wolf3D_Avatar.geometry.boundingBox.max.y;
+      }
+      if (nodes.Streamoji_Body) {
+        if (!nodes.Streamoji_Body.geometry.boundingBox) nodes.Streamoji_Body.geometry.computeBoundingBox();
+        return nodes.Streamoji_Body.geometry.boundingBox.max.y;
+      }
+    } catch (e) {
+      console.warn("Could not compute bounding box for avatar height", e);
+    }
+    return 1.8;
+  }, [nodes]);
+  const gender = useMemo(() => (height > 1 ? "male" : "female"), [height]);
 
   // Load animations based on gender
   const { animations } = useGLTF(
@@ -111,14 +128,16 @@ export default function Avatar() {
       >
         <group ref={avatarRef} scale={0.9} dispose={null}>
           <primitive object={nodes.Hips} />
-          <skinnedMesh
-            name="Wolf3D_Avatar"
-            geometry={nodes.Wolf3D_Avatar.geometry}
-            material={materials.Wolf3D_Avatar}
-            skeleton={nodes.Wolf3D_Avatar.skeleton}
-            morphTargetDictionary={nodes.Wolf3D_Avatar.morphTargetDictionary}
-            morphTargetInfluences={nodes.Wolf3D_Avatar.morphTargetInfluences}
-          />
+          {nodes.Wolf3D_Avatar && (
+            <skinnedMesh
+              name="Wolf3D_Avatar"
+              geometry={nodes.Wolf3D_Avatar.geometry}
+              material={materials.Wolf3D_Avatar}
+              skeleton={nodes.Wolf3D_Avatar.skeleton}
+              morphTargetDictionary={nodes.Wolf3D_Avatar.morphTargetDictionary}
+              morphTargetInfluences={nodes.Wolf3D_Avatar.morphTargetInfluences}
+            />
+          )}
           {nodes.Wolf3D_Avatar_Transparent && (
             <skinnedMesh
               geometry={nodes.Wolf3D_Avatar_Transparent.geometry}
@@ -126,8 +145,80 @@ export default function Avatar() {
               skeleton={nodes.Wolf3D_Avatar_Transparent.skeleton}
             />
           )}
+          {nodes.Streamoji_Body && (
+            <skinnedMesh
+              name="Streamoji_Body"
+              geometry={nodes.Streamoji_Body.geometry}
+              material={materials.Streamoji_Body}
+              skeleton={nodes.Streamoji_Body.skeleton}
+            />
+          )}
+          {nodes.Streamoji_Outfit_Bottom && (
+            <skinnedMesh
+              name="Streamoji_Outfit_Bottom"
+              geometry={nodes.Streamoji_Outfit_Bottom.geometry}
+              material={materials.Streamoji_Outfit_Bottom}
+              skeleton={nodes.Streamoji_Outfit_Bottom.skeleton}
+            />
+          )}
+          {nodes.Streamoji_Outfit_Footwear && (
+            <skinnedMesh
+              name="Streamoji_Outfit_Footwear"
+              geometry={nodes.Streamoji_Outfit_Footwear.geometry}
+              material={materials.Streamoji_Outfit_Footwear}
+              skeleton={nodes.Streamoji_Outfit_Footwear.skeleton}
+            />
+          )}
+          {nodes.Streamoji_Outfit_Top && (
+            <skinnedMesh
+              name="Streamoji_Outfit_Top"
+              geometry={nodes.Streamoji_Outfit_Top.geometry}
+              material={materials.Streamoji_Outfit_Top}
+              skeleton={nodes.Streamoji_Outfit_Top.skeleton}
+            />
+          )}
+          {nodes.EyeLeft && materials.Streamoji_Eye && (
+            <skinnedMesh
+              name="EyeLeft"
+              geometry={nodes.EyeLeft.geometry}
+              material={materials.Streamoji_Eye}
+              skeleton={nodes.EyeLeft.skeleton}
+              morphTargetDictionary={nodes.EyeLeft.morphTargetDictionary}
+              morphTargetInfluences={nodes.EyeLeft.morphTargetInfluences}
+            />
+          )}
+          {nodes.EyeRight && materials.Streamoji_Eye && (
+            <skinnedMesh
+              name="EyeRight"
+              geometry={nodes.EyeRight.geometry}
+              material={materials.Streamoji_Eye}
+              skeleton={nodes.EyeRight.skeleton}
+              morphTargetDictionary={nodes.EyeRight.morphTargetDictionary}
+              morphTargetInfluences={nodes.EyeRight.morphTargetInfluences}
+            />
+          )}
+          {nodes.Streamoji_Head && (
+            <skinnedMesh
+              name="Streamoji_Head"
+              geometry={nodes.Streamoji_Head.geometry}
+              material={materials.Streamoji_Skin}
+              skeleton={nodes.Streamoji_Head.skeleton}
+              morphTargetDictionary={nodes.Streamoji_Head.morphTargetDictionary}
+              morphTargetInfluences={nodes.Streamoji_Head.morphTargetInfluences}
+            />
+          )}
+          {nodes.Streamoji_Teeth && (
+            <skinnedMesh
+              name="Streamoji_Teeth"
+              geometry={nodes.Streamoji_Teeth.geometry}
+              material={materials.Streamoji_Teeth}
+              skeleton={nodes.Streamoji_Teeth.skeleton}
+              morphTargetDictionary={nodes.Streamoji_Teeth.morphTargetDictionary}
+              morphTargetInfluences={nodes.Streamoji_Teeth.morphTargetInfluences}
+            />
+          )}
           <CapsuleCollider
-            args={[height / 2 - 0.3, 0.3]}
+            args={[height / 2 + 0.1, 0.3]}
             position={[0, 1, 0]}
           />
         </group>

@@ -12,7 +12,7 @@ export default function Profile () {
   return (
     <div className="container-profile">
       <div className="card-profile">
-        <EditAvatar />
+        {/* <EditAvatar /> */}
         <div className="vertical-separator" />
         <EditDataUser />
       </div>

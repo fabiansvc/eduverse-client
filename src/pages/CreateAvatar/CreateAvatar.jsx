@@ -4,9 +4,8 @@
  * Users can customize their avatars and save them to their profiles.
  */
 import "./styles-create-avatar.css";
-import { AvatarCreatorViewer } from "@readyplayerme/rpm-react-sdk";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { editUser, getUser } from "../../db/user-collection";
 import { useAuth } from "../../context/AuthContext";
 import { useUser } from "../../context/UserContext";
@@ -18,29 +17,53 @@ import { useUser } from "../../context/UserContext";
 const CreateAvatar = () => {
   const auth = useAuth();
   const { setUser } = useUser();
-  const { email } = auth.userLogged;
+  const { email } = auth.userLogged || {};
   const navigate = useNavigate();
   const location = useLocation();
   const type = location.state;
-  const readyPlayerMeSubdomain = import.meta.env.VITE_READY_PLAYER_ME_SUBDOMAIN;
 
-  /**
-   * Handles the event when the avatar is exported.
-   * @param {string} avatarUrl The avatarUrl of the exported avatar.
-   */
-  const handleOnAvatarExported = (avatarUrl) => {
-    switch (type) {
-      case "user":
-        saveAvatarUser(avatarUrl, email);
-        break;
-      case "guest":
-        setAvatarGuest(avatarUrl);
-        break;
+  const [authToken, setAuthToken] = useState("");
+  const [iframeUrl, setIframeUrl] = useState("");
+  const iframeRef = useRef(null);
 
-      default:
-        break;
+  const clientId = "client_anpPYo3lziQF3PuoEXpn8FJluVj1";
+  const clientSecret = "1NzP7swcHY9YgaLMF6ZPQACpf3sr9oUB";
+  const userId = email || "guest_user";
+  const userName = email || "Guest";
+
+  useEffect(() => {
+    const fetchAuthToken = async () => {
+      try {
+        const response = await fetch(
+          "https://us-central1-streamoji-265f4.cloudfunctions.net/getAuthToken",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Client-Secret": clientSecret,
+              "Client-Id": clientId,
+            },
+            body: JSON.stringify({ userId, userName }),
+          }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setAuthToken(data.authToken);
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+    fetchAuthToken();
+  }, [clientId, clientSecret, userId, userName]);
+
+  useEffect(() => {
+    if (authToken) {
+      setIframeUrl(
+        `https://avatars.streamoji.com/createAvatar?iframe=true&bodyType=Full&token=${authToken}`
+      );
     }
-  };
+  }, [authToken]);
 
   /**
    * Saves the avatar avatarUrl to the user's profile.
@@ -76,7 +99,7 @@ const CreateAvatar = () => {
    */
   const setAvatarGuest = useCallback(
     (avatarUrl) => {
-    
+
       window.localStorage.setItem("avatarUrl", avatarUrl);
       window.localStorage.setItem(
         "avatarPng",
@@ -87,21 +110,63 @@ const CreateAvatar = () => {
     [navigate]
   );
 
-  const configPropertiesAvatar = {
-    clearCache: true,
-    bodyType: "fullbody",
-    quickStart: false,
-    language: "es",
-    textureFormat: "webp",
-  };
+  useEffect(() => {
+    const handleOnAvatarExported = (avatarUrl) => {
+      switch (type) {
+        case "user":
+          saveAvatarUser(avatarUrl, email);
+          break;
+        case "guest":
+          setAvatarGuest(avatarUrl);
+          break;
+        default:
+          break;
+      }
+    };
+
+    const subscribe = (event) => {
+      try {
+        const json = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (json?.source !== "streamojiavatars") return;
+
+        if (json.eventName === "v1.frame.ready" && iframeRef.current) {
+          iframeRef.current.contentWindow.postMessage(
+            JSON.stringify({
+              target: "streamojiavatars",
+              type: "subscribe",
+              eventName: "v1.**",
+            }),
+            "*"
+          );
+        }
+        if (json.eventName === "v1.avatar.exported") {
+          const url = json.data.url;
+          handleOnAvatarExported(url);
+        }
+      } catch (error) {
+        // Ignored unparsable messages
+      }
+    };
+
+    window.addEventListener("message", subscribe);
+    return () => window.removeEventListener("message", subscribe);
+  }, [type, email, saveAvatarUser, setAvatarGuest]);
 
   return (
     <div className="container-avatar-creator-viewer">
-      <AvatarCreatorViewer
-        subdomain={readyPlayerMeSubdomain}
-        editorConfig={configPropertiesAvatar}
-        onAvatarExported={handleOnAvatarExported}
-      />
+      {iframeUrl ? (
+        <iframe
+          ref={iframeRef}
+          src={iframeUrl}
+          className="frame"
+          allow="camera *; microphone *; clipboard-write"
+          style={{ width: "100%", height: "100%", border: "none" }}
+        />
+      ) : (
+        <p style={{ color: "white", textAlign: "center", marginTop: "20px" }}>
+          Loading Avatar Creator...
+        </p>
+      )}
     </div>
   );
 };
