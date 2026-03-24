@@ -18,8 +18,8 @@ export default function Menu() {
   const [showInstructive, setShowInstructive] = useState(false);
 
   const image = useMemo(
-    () => <img className="icon-avatar" src={user.avatarPng} alt="user" />,
-    [user.avatarPng]
+    () => <img className="icon-avatar" src={"assets/avatar/avatar.png"} alt="user" />,
+    [user]
   );
 
   const handleMenuClick = useCallback(() => {
@@ -79,9 +79,9 @@ export default function Menu() {
           {showMenu && !showProfile && !showInstructive && (
             <nav className="menu-nav">
               <ul>
-                <li>
+                {/* <li>
                   <Link onClick={handleProfileClick}>Perfil</Link>
-                </li>
+                </li> */}
                 <li>
                   <Link onClick={handleInstructiveClick}>Instructivo</Link>
                 </li>
