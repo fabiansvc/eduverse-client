@@ -26,8 +26,6 @@ export default function Avatar() {
     []
   );
 
-  console.log(user.avatarUrl);
-
   // Append optimization parameters to the avatar URL
   const url = useMemo(
     () => {
@@ -58,9 +56,8 @@ export default function Avatar() {
     } catch (e) {
       console.warn("Could not compute bounding box for avatar height", e);
     }
-    return 1.8;
   }, [nodes]);
-  const gender = useMemo(() => (height > 1 ? "male" : "female"), [height]);
+  const gender = useMemo(() => (height > 1.07 ? "male" : "female"), [height]);
 
   // Load animations based on gender
   const { animations } = useGLTF(

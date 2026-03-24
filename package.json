@@ -19,7 +19,6 @@
   "dependencies": {
     "@react-three/drei": "^9.107.2",
     "@react-three/fiber": "^8.16.8",
-    "@readyplayerme/rpm-react-sdk": "^0.1.5",
     "@types/three": "^0.165.0",
     "ecctrl": "^1.0.77",
     "fiber": "^1.0.4",
