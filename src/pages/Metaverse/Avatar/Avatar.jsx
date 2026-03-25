@@ -67,7 +67,8 @@ function AvatarModel({ streamojiToken }) {
       console.warn("Could not compute bounding box for avatar height", e);
     }
   }, [nodes]);
-  const gender = useMemo(() => (height > 1.07 ? "male" : "female"), [height]);
+
+  const gender = useMemo(() => (nodes?.Streamoji_Hair?.bindMode ? "male" : "female"), [nodes]);
 
   // Load animations based on gender
   const { animations } = useGLTF(
@@ -117,6 +118,7 @@ function AvatarModel({ streamojiToken }) {
       avatarBodyRef.current.setGravityScale(1, true);
     }
   }, []);
+
 
   // Render the avatar component
   return (
